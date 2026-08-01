@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SubTrack — Subscription & Budget Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Syne (display) + DM Sans (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ============================================================
+       SIDEBAR NAVIGATION
+       Yahan pe left side ka navigation bar hai
+  ============================================================ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">Sub<strong>Track</strong></span>
+      </div>
+      <!-- Mobile menu close button -->
+      <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="dashboard">
+        <span class="nav-icon">⬡</span> Dashboard
+      </a>
+      <a href="#" class="nav-item" data-section="subscriptions">
+        <span class="nav-icon">↻</span> Subscriptions
+      </a>
+      <a href="#" class="nav-item" data-section="expenses">
+        <span class="nav-icon">◎</span> Expenses
+      </a>
+      <a href="#" class="nav-item" data-section="budget">
+        <span class="nav-icon">▣</span> Budget
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p>Made with ♥ for smart budgeting</p>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ============================================================
+       MAIN CONTENT AREA
+       Yahan pe saara main content aayega
+  ============================================================ -->
+  <main class="main-content">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-right">
+        <div class="date-badge" id="currentDate">—</div>
+        <div class="currency-badge">₹ INR</div>
+      </div>
+    </header>
+
+    <!-- ====================================================
+         SECTION 1: DASHBOARD
+         Yahan pe summary cards dikhenge
+    ==================================================== -->
+    <section class="section active" id="section-dashboard">
+      <div class="section-heading">
+        <h1>Dashboard</h1>
+        <p>Your financial snapshot at a glance</p>
+      </div>
+
+      <!-- Summary cards grid -->
+      <div class="cards-grid">
+        <div class="card card--accent">
+          <div class="card-label">Monthly Budget</div>
+          <div class="card-value" id="db-budget">₹0</div>
+          <div class="card-sub">Set in Budget tab</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Total Expenses</div>
+          <div class="card-value" id="db-expenses">₹0</div>
+          <div class="card-sub">Manual + Subscriptions</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Remaining Balance</div>
+          <div class="card-value" id="db-remaining">₹0</div>
+          <div class="card-sub" id="db-remaining-label">Budget – Expenses</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Subscriptions Cost</div>
+          <div class="card-value" id="db-subs">₹0</div>
+          <div class="card-sub">Per month total</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="budget-progress-wrap card">
+        <div class="budget-progress-header">
+          <span>Budget Used</span>
+          <span id="budget-percent-label">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="budget-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Quick charts: category breakdown -->
+      <div class="section-sub-heading">Expense Breakdown</div>
+      <div class="category-bars" id="category-bars">
+        <!-- JS se fill hoga -->
+        <p class="empty-state">No expenses yet. Add some in the Expenses tab.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================
+         SECTION 2: SUBSCRIPTIONS
+         Subscriptions add/edit/delete karo yahan
+    ==================================================== -->
+    <section class="section" id="section-subscriptions">
+      <div class="section-heading">
+        <h1>Subscriptions</h1>
+        <p>Track all your recurring payments</p>
+      </div>
+
+      <!-- Add subscription form -->
+      <div class="card form-card">
+        <h2 class="form-title" id="sub-form-title">Add Subscription</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Service Name</label>
+            <input type="text" id="sub-name" placeholder="e.g. Netflix, Spotify…" />
+          </div>
+          <div class="form-group">
+            <label>Cost (₹)</label>
+            <input type="number" id="sub-cost" placeholder="e.g. 499" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Billing Cycle</label>
+            <select id="sub-cycle">
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Next Billing Date</label>
+            <input type="date" id="sub-date" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--primary" id="sub-submit-btn" onclick="addOrUpdateSubscription()">Add Subscription</button>
+          <button class="btn btn--ghost" id="sub-cancel-btn" onclick="cancelSubEdit()" style="display:none">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Total subscriptions bar -->
+      <div class="sub-total-bar">
+        <span>Total monthly subscription cost:</span>
+        <strong id="sub-total-display">₹0 / month</strong>
+      </div>
+
+      <!-- Subscriptions list -->
+      <div class="list-container" id="sub-list">
+        <p class="empty-state">No subscriptions added yet. Add your first one above!</p>
+      </div>
+    </section>
+
+    <!-- ====================================================
+         SECTION 3: EXPENSES
+         Daily expenses track karo yahan
+    ==================================================== -->
+    <section class="section" id="section-expenses">
+      <div class="section-heading">
+        <h1>Expenses</h1>
+        <p>Log your daily spending</p>
+      </div>
+
+      <!-- Add expense form -->
+      <div class="card form-card">
+        <h2 class="form-title">Add Expense</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="exp-desc" placeholder="e.g. Lunch, Uber ride…" />
+          </div>
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="exp-amount" placeholder="e.g. 250" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="exp-category">
+              <option value="Food">🍔 Food</option>
+              <option value="Transport">🚗 Transport</option>
+              <option value="Bills">💡 Bills</option>
+              <option value="Shopping">🛍️ Shopping</option>
+              <option value="Others">📦 Others</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="exp-date" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--primary" onclick="addExpense()">Add Expense</button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <span class="filter-label">Filter:</span>
+        <button class="filter-btn active" data-cat="All" onclick="filterExpenses(this)">All</button>
+        <button class="filter-btn" data-cat="Food" onclick="filterExpenses(this)">🍔 Food</button>
+        <button class="filter-btn" data-cat="Transport" onclick="filterExpenses(this)">🚗 Transport</button>
+        <button class="filter-btn" data-cat="Bills" onclick="filterExpenses(this)">💡 Bills</button>
+        <button class="filter-btn" data-cat="Shopping" onclick="filterExpenses(this)">🛍️ Shopping</button>
+        <button class="filter-btn" data-cat="Others" onclick="filterExpenses(this)">📦 Others</button>
+      </div>
+
+      <!-- Expense history list -->
+      <div class="list-container" id="exp-list">
+        <p class="empty-state">No expenses logged yet. Add your first expense above!</p>
+      </div>
+    </section>
+
+    <!-- ====================================================
+         SECTION 4: BUDGET
+         Monthly budget set karo yahan
+    ==================================================== -->
+    <section class="section" id="section-budget">
+      <div class="section-heading">
+        <h1>Budget</h1>
+        <p>Set and monitor your monthly budget</p>
+      </div>
+
+      <!-- Set budget form -->
+      <div class="card form-card budget-set-card">
+        <h2 class="form-title">Set Monthly Budget</h2>
+        <div class="form-grid form-grid--single">
+          <div class="form-group">
+            <label>Monthly Budget (₹)</label>
+            <input type="number" id="budget-input" placeholder="e.g. 30000" min="0" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--primary" onclick="setBudget()">Save Budget</button>
+        </div>
+      </div>
+
+      <!-- Budget stats -->
+      <div class="cards-grid">
+        <div class="card card--accent">
+          <div class="card-label">Monthly Budget</div>
+          <div class="card-value" id="bud-budget">₹0</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Total Spent</div>
+          <div class="card-value" id="bud-spent">₹0</div>
+          <div class="card-sub">Expenses + Subscriptions</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Remaining</div>
+          <div class="card-value" id="bud-remaining">₹0</div>
+        </div>
+      </div>
+
+      <!-- Budget ring / visual progress -->
+      <div class="card budget-visual-card">
+        <div class="budget-ring-wrap">
+          <svg class="budget-ring" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle class="ring-bg" cx="100" cy="100" r="80"/>
+            <circle class="ring-fill" id="ring-fill" cx="100" cy="100" r="80"
+              stroke-dasharray="502.65"
+              stroke-dashoffset="502.65"/>
+          </svg>
+          <div class="ring-center-text">
+            <div class="ring-percent" id="ring-percent">0%</div>
+            <div class="ring-label">Used</div>
+          </div>
+        </div>
+        <div class="budget-ring-legend">
+          <div class="legend-item"><span class="legend-dot legend-dot--used"></span> Spent</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--free"></span> Remaining</div>
+        </div>
+      </div>
+
+      <!-- Tip box -->
+      <div class="tip-box" id="budget-tip">
+        💡 Set a budget above to get started with tracking your finances.
+      </div>
+    </section>
+
+  </main><!-- end main-content -->
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
